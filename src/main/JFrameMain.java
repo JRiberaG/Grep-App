@@ -1,6 +1,6 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
+ * To change this template FILE, choose Tools | Templates
  * and open the template in the editor.
  */
 package main;
@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import javax.swing.table.DefaultTableModel;
 import language.StringEnglish;
 import language.StringSpanish;
@@ -23,6 +24,7 @@ import support.StatusThread;
 import support.StringHelper;
 import support.ResultCounterThread;
 import support.Utils;
+import static support.Utils.getExtensions;
 import static support.Utils.hasSameExtension;
 
 public class JFrameMain extends javax.swing.JFrame {
@@ -38,11 +40,16 @@ public class JFrameMain extends javax.swing.JFrame {
     private static ResultCounterThread rcThread;
     
     public static DefaultTableModel model;
+    
+    private static JFileChooser openFileChooser;
+    
+    static ArrayList<String> listExtensions;
 
     public JFrameMain() {
         initComponents();
         
         loadJFrame();
+        configFileChooser();
     }
 
    
@@ -54,6 +61,13 @@ public class JFrameMain extends javax.swing.JFrame {
         btnGroupLanguage = new javax.swing.ButtonGroup();
         btnGroupExtensions = new javax.swing.ButtonGroup();
         buttonGroup1 = new javax.swing.ButtonGroup();
+        dialogAbout = new javax.swing.JDialog();
+        lblAuthor = new javax.swing.JLabel();
+        lblDate = new javax.swing.JLabel();
+        lblVersion = new javax.swing.JLabel();
+        lblGithub = new javax.swing.JLabel();
+        dialogHowTo = new javax.swing.JDialog();
+        lblHowTo = new javax.swing.JLabel();
         etPattern = new javax.swing.JTextField();
         panelResults = new javax.swing.JPanel();
         btnClear = new javax.swing.JButton();
@@ -79,12 +93,45 @@ public class JFrameMain extends javax.swing.JFrame {
         lblErrPattern = new javax.swing.JLabel();
         lblPattern = new javax.swing.JLabel();
         lblPath = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         menuHowTo = new javax.swing.JMenu();
         menuLang = new javax.swing.JMenu();
         rbmEn = new javax.swing.JRadioButtonMenuItem();
         rbmEs = new javax.swing.JRadioButtonMenuItem();
         menuAbout = new javax.swing.JMenu();
+
+        dialogAbout.setTitle("About - GrepApp");
+        dialogAbout.setLocationByPlatform(true);
+        dialogAbout.setMinimumSize(new java.awt.Dimension(225, 190));
+        dialogAbout.setModal(true);
+        dialogAbout.setPreferredSize(new java.awt.Dimension(225, 190));
+        dialogAbout.setResizable(false);
+        dialogAbout.getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        lblAuthor.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        lblAuthor.setText("Jorge Ribera");
+        dialogAbout.getContentPane().add(lblAuthor, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, -1, -1));
+
+        lblDate.setText("may 2020");
+        dialogAbout.getContentPane().add(lblDate, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, -1, -1));
+
+        lblVersion.setText("Version 1.0");
+        dialogAbout.getContentPane().add(lblVersion, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 80, -1, -1));
+
+        lblGithub.setText("https://www.github.com/jriberag");
+        dialogAbout.getContentPane().add(lblGithub, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 110, -1, -1));
+
+        dialogHowTo.setTitle("How to use the app - GrepApp");
+        dialogHowTo.setMinimumSize(new java.awt.Dimension(700, 400));
+        dialogHowTo.setPreferredSize(new java.awt.Dimension(700, 400));
+        dialogHowTo.setResizable(false);
+        dialogHowTo.getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        lblHowTo.setText("<html>\n<h3>How to use the app</h3>\n<p> The objective of this app is to locate within the path or the file the pattern given by the user, quite useful when you know you wrote something like <code>Hello World!</code> but you can't remember where...<br/>\n<h4>Steps to follow:</h4>\n1) Type (copy/paste if you like) the path or the file in the corresponding field.<br/>\n2) Type the pattern to search, for example, <code>Hello World!</code><br/>\n3) Select where do you want or do you except to find the pattern, either within the whole file, just at the beginning or at the very end. <br/>\n4) Select the kind of files you want to search on, either all the binary files or just those who have a concrete extension, for example: <code>.json, .cpp, .java, .html,</code> ... <br/>\n5) Press <b>Search</b> and wait until the status stays as <i>Finished</i>. <br/><br/>\nIn case you want to reset the fields to their default value, press <b>Reset</b>.<br/>\nIn case you want to clear the data from the results, press <b>Clear</b>.<br/><br/>\nAny suggestion, doubt  or constructive criticism is very welcomed!<br/>\n(Link to my GitHub in the <b>About</b> menu)<br/>\n</html>\n");
+        lblHowTo.setMinimumSize(new java.awt.Dimension(300, 300));
+        lblHowTo.setPreferredSize(new java.awt.Dimension(300, 300));
+        dialogHowTo.getContentPane().add(lblHowTo, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 0, 670, 370));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Grep App");
@@ -95,9 +142,10 @@ public class JFrameMain extends javax.swing.JFrame {
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         etPattern.setToolTipText("<html>The pattern you are looking for. Example: <code>Hello World!</code><br/>\nMeanig that, within the path/file, the program will search for <code>Hello World</code> and, if there is any results, they will be shown in the table.</html>");
+        etPattern.setNextFocusableComponent(rbContains);
         getContentPane().add(etPattern, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 120, 260, -1));
 
-        panelResults.setBorder(javax.swing.BorderFactory.createTitledBorder("Results"));
+        panelResults.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)), "Results", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Arial", 1, 12))); // NOI18N
         panelResults.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         btnClear.setText("Clear");
@@ -140,9 +188,9 @@ public class JFrameMain extends javax.swing.JFrame {
 
         etPath.setToolTipText("<html>The path/file where the pattern will be searched. Example: <code>C:\\Users\\Downloads</code></html>");
         etPath.setNextFocusableComponent(etPattern);
-        getContentPane().add(etPath, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 60, 260, -1));
+        getContentPane().add(etPath, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 60, 230, -1));
 
-        panelSearchConfig.setBorder(javax.swing.BorderFactory.createTitledBorder("Search configuration"));
+        panelSearchConfig.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)), "Search configuration", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Arial", 1, 12))); // NOI18N
         panelSearchConfig.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         lblStatus.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
@@ -169,7 +217,7 @@ public class JFrameMain extends javax.swing.JFrame {
         });
         panelSearchConfig.add(btnSearch, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 410, 125, -1));
 
-        panelExtensionOption.setBorder(javax.swing.BorderFactory.createTitledBorder("Extension option"));
+        panelExtensionOption.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Extension option", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Arial", 0, 12))); // NOI18N
         panelExtensionOption.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         btnGroupExtensions.add(rbAllExtensions);
@@ -197,7 +245,7 @@ public class JFrameMain extends javax.swing.JFrame {
 
         panelSearchConfig.add(panelExtensionOption, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 270, 370, 100));
 
-        panelSearchOption.setBorder(javax.swing.BorderFactory.createTitledBorder("Search option"));
+        panelSearchOption.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Search option", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Arial", 0, 12))); // NOI18N
         panelSearchOption.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         btnGroupSearch.add(rbEnds);
@@ -229,9 +277,21 @@ public class JFrameMain extends javax.swing.JFrame {
         lblPath.setText("Path or file:");
         panelSearchConfig.add(lblPath, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 35, 100, -1));
 
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        panelSearchConfig.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 28, 30, 30));
+
         getContentPane().add(panelSearchConfig, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 30, 400, 510));
 
         menuHowTo.setText("How to use");
+        menuHowTo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                menuHowToMouseClicked(evt);
+            }
+        });
         menuBar.add(menuHowTo);
 
         menuLang.setText("Language");
@@ -258,6 +318,11 @@ public class JFrameMain extends javax.swing.JFrame {
         menuBar.add(menuLang);
 
         menuAbout.setText("About");
+        menuAbout.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                menuAboutMouseClicked(evt);
+            }
+        });
         menuBar.add(menuAbout);
 
         setJMenuBar(menuBar);
@@ -267,18 +332,7 @@ public class JFrameMain extends javax.swing.JFrame {
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         cleanTable();
-        reset();
-//        btnClean.setEnabled(true);
-//        lblNumResults.setVisible(true);
-//        lblNumResults.setText("0");
-//        ResultCounterThread test = new ResultCounterThread(lblNumResults);
-//        test.start();
-        
-        
-//        StatusThread st = new StatusThread(lblStatus);
-//        st.start();
-//        st.setGo(true);
-        
+        reset();   
         String strPath = etPath.getText().trim(),
                 strPattern = etPattern.getText(),
                 strExtensions = etExtensions.getText().trim();
@@ -291,7 +345,7 @@ public class JFrameMain extends javax.swing.JFrame {
             lblErrPath.setText("");
             lblErrPattern.setText("");
             
-            // Get the current option of pattern (contains, starts, ends)
+            // Get the current option of PATTERN (CONTAINS, starts, ends)
             checkPatternSelection();
             
             // Check whether the path/file exists or not
@@ -299,40 +353,27 @@ public class JFrameMain extends javax.swing.JFrame {
             if (!file.exists()) {
                 lblErrPath.setText(StringHelper.errorPath404);
             } else {
-//                
+                enablePanelResults();
+                checkForSupportThreads();
                 // Search within all non binary files
                 if (rbAllExtensions.isSelected()) {
-                    
-                    btnClear.setEnabled(true);
-                    lblNumResults.setVisible(true);
-                    lblNumResults.setText("0");
-                    checkForSupportThreads();
 
                     // Check whether is directory or not
                     if (file.isDirectory()) {
-                        
                         numDirs++;
-                        
                         ArrayList<File> files = new ArrayList<>(Arrays.asList(file.listFiles()));
 
                         for (File f : files) {
-                            Seeker s = new Seeker(f, strPattern, patternSelection, null);
+                            Seeker s = new Seeker(f, strPattern, patternSelection, false);
                             numThreads++;
                             s.start();
                         }
                     } else {
                         try {
-
                             synchronized(StatManager.class) {
                                 numFiles++;
                             }
-                            
-                           
-//                            ArrayList<Seeker> results = Seeker.readFile(file, strPattern, patternSelection);
                             Seeker.readFile(file, strPattern, patternSelection);
-//                            for (Seeker s : results) {
-//    //                            System.out.println(s.toString());
-//                            }
                         } catch (IOException ex) {
                             Logger.getLogger(JFrameMain.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -342,44 +383,31 @@ public class JFrameMain extends javax.swing.JFrame {
                 else {
                     if (!strExtensions.isEmpty()) {
                         if (strExtensions.contains(".")) {
-                            btnClear.setEnabled(true);
-                            lblNumResults.setVisible(true);
-                            lblNumResults.setText("0");
-                            checkForSupportThreads();
                             
                             ArrayList<String> listExtensions = getExtensions(strExtensions);
 
                             // Check whether is directory or not
                             if (file.isDirectory()) {
-
                                 numDirs++;
-
                                 ArrayList<File> files = new ArrayList<>(Arrays.asList(file.listFiles()));
 
-                                // New thread is created for each file
+                                // New thread is created for each FILE
                                 for (File f : files) {
-                                    Seeker s = new Seeker(f, strPattern, patternSelection, listExtensions);
+                                    Seeker s = new Seeker(f, strPattern, patternSelection, true);
                                     numThreads++;
                                     s.start();
                                 }
                             } 
-                            // Is file
+                            // Is FILE
                             else {
-                                // Check whether the file extension matches any of the extensions user inputed
+                                // Check whether the FILE extension matches any of the extensions user inputed
                                 for (String ext : listExtensions) {
                                     if (hasSameExtension(file.getName(), ext)) {
                                         try {
-
-                                synchronized(StatManager.class) {
-                                    numFiles++;
-                                }
-
-
-    //                                        ArrayList<Seeker> results = Seeker.readFile(file, strPattern, patternSelection);
+                                            synchronized(StatManager.class) {
+                                                numFiles++;
+                                            }
                                             Seeker.readFile(file, strPattern, patternSelection);
-    //                                        for (Seeker s : results) {
-    //                //                            System.out.println(s.toString());
-    //                                        }
                                         } catch (IOException ex) {
                                             Logger.getLogger(JFrameMain.class.getName()).log(Level.SEVERE, null, ex);
                                         }
@@ -396,21 +424,23 @@ public class JFrameMain extends javax.swing.JFrame {
             }
         // </editor-fold>
         } 
-        // Either Path or Pattern are emty
+        // Either Path or Pattern are empty
         else {
             // <editor-fold>
             if (strPath.isEmpty()) {
-                lblErrPath.setText(StringHelper.errorPathEmpty);
+                lblErrPath.setText(StringHelper.errorFieldEmpty);
             }
             if (strPattern.isEmpty()) {
-                lblErrPattern.setText(StringHelper.errorPatternEmpty);
+                lblErrPattern.setText(StringHelper.errorFieldEmpty);
             }
             // </editor-fold>
         }
     }//GEN-LAST:event_btnSearchActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        // Reset the stats (# of results, # of read files, ...)
         reset();
+        
         cleanTable();
         
         btnClear.setEnabled(false);
@@ -443,6 +473,22 @@ public class JFrameMain extends javax.swing.JFrame {
         lang = "en";
         changeLang();
     }//GEN-LAST:event_rbmEnActionPerformed
+
+    private void menuHowToMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuHowToMouseClicked
+        dialogHowTo.setVisible(true);
+    }//GEN-LAST:event_menuHowToMouseClicked
+
+    private void menuAboutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuAboutMouseClicked
+        dialogAbout.setVisible(true);
+    }//GEN-LAST:event_menuAboutMouseClicked
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        int returnValue = openFileChooser.showOpenDialog(this);
+        
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            etPath.setText(openFileChooser.getSelectedFile().getAbsolutePath());
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -485,18 +531,26 @@ public class JFrameMain extends javax.swing.JFrame {
     private javax.swing.JButton btnReset;
     private javax.swing.JButton btnSearch;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JDialog dialogAbout;
+    private javax.swing.JDialog dialogHowTo;
     private javax.swing.JTextField etExtensions;
     private javax.swing.JTextField etPath;
     private javax.swing.JTextField etPattern;
+    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblAuthor;
+    private javax.swing.JLabel lblDate;
     private javax.swing.JLabel lblErrPath;
     private javax.swing.JLabel lblErrPattern;
+    private javax.swing.JLabel lblGithub;
+    private javax.swing.JLabel lblHowTo;
     private javax.swing.JLabel lblNumResults;
     private javax.swing.JLabel lblNumResultsHeader;
     private javax.swing.JLabel lblPath;
     private javax.swing.JLabel lblPattern;
     private javax.swing.JLabel lblStatus;
     private javax.swing.JLabel lblStatusHeader;
+    private javax.swing.JLabel lblVersion;
     private javax.swing.JMenu menuAbout;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenu menuHowTo;
@@ -517,20 +571,40 @@ public class JFrameMain extends javax.swing.JFrame {
     // </editor-fold>
     
     
+    private void loadJFrame() {
+        setTable();
+        deactivatePanelResult();
+        
+        lblErrPath.setText("");
+        lblErrPattern.setText("");
+        etPath.setText("");
+        etPattern.setText("");
+        
+        if (stThread != null) {
+            stThread.setGo(false);
+        }
+        
+        etPattern.requestFocus();
+        etPath.requestFocus();
+        
+        rbContains.setSelected(true);
+        rbAllExtensions.setSelected(true);
+        
+        listExtensions = new ArrayList<>();
+    }
+    
     private void setTable() {
         String titles[] = {StringHelper.file, StringHelper.numOfLine, StringHelper.line};
-//        String titles[] = {"File", "# of line", "Line"};
         model = new DefaultTableModel(null, titles) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // set table column uneditable
-                return false;
+                return true;
             }
         };
         
         tableResults.setModel(model);
         
-//        tableResults.getTableHeader().setResizingAllowed(false);
+        // Sets each columns width
         tableResults.getColumnModel().getColumn(0).setPreferredWidth(400);
         tableResults.getColumnModel().getColumn(1).setPreferredWidth(50);
         tableResults.getColumnModel().getColumn(2).setPreferredWidth(400);
@@ -547,9 +621,6 @@ public class JFrameMain extends javax.swing.JFrame {
     private void changeLang() {
         setStringHelperStrings();
         setStrings();
-//        if (lang.equals("en")) {
-//        } else {
-//        }
     }
 
     private void checkPatternSelection() {
@@ -561,31 +632,10 @@ public class JFrameMain extends javax.swing.JFrame {
             patternSelection = ENDS_WITH;
         }
     }
-
-    private void loadJFrame() {
-        setTable();
-        deactivatePanelResult();
-        
-        lblErrPath.setText("");
-        lblErrPattern.setText("");
-        etPath.setText("");
-        etPattern.setText("");
-        
-        if (stThread != null) {
-            stThread.setGo(false);
-        }
-//        lblStatus.setText("Waiting");
-        
-        etPath.requestFocus();
-    }
     
-    private ArrayList<String> getExtensions(String str) {
-        str = str.replace(" ", "");
-        String arrExtensions[] = str.split(",");
-        
-         return new ArrayList<String>(Arrays.asList(arrExtensions));
-    }
-
+    /**
+     * Removes all the rows
+     */
     private void cleanTable() {
         DefaultTableModel dm = (DefaultTableModel)tableResults.getModel();
         for (int i = tableResults.getModel().getRowCount() - 1; i >= 0; i--) {
@@ -609,80 +659,83 @@ public class JFrameMain extends javax.swing.JFrame {
 
     private void setStringHelperStrings() {
         if (lang.equals("es")) {
-            StringHelper.errorPath404 = StringSpanish.errorPath404_ES;
-            StringHelper.errorPathEmpty = StringSpanish.errorPathEmpty_ES;
-            StringHelper.errorPatternEmpty = StringSpanish.errorPatternEmpty_ES;
-            StringHelper.status = StringSpanish.status_ES;
-            StringHelper.finished = StringSpanish.finished_ES;
-            StringHelper.searching1 = StringSpanish.searching1_ES;
-            StringHelper.searching2 = StringSpanish.searching2_ES;
-            StringHelper.searching3 = StringSpanish.searching3_ES;
-            StringHelper.waiting = StringSpanish.waiting_ES;
-            StringHelper.file = StringSpanish.file_ES;
-            StringHelper.numOfLine = StringSpanish.numOfLine_ES;
-            StringHelper.line = StringSpanish.line_ES;
-            StringHelper.numOfResults = StringSpanish.numOfResults_ES;
-            StringHelper.pathOrFile = StringSpanish.pathOrFile_ES;
-            StringHelper.pattern = StringSpanish.pattern_ES;
-            StringHelper.searchConfiguration = StringSpanish.searchConfiguration_ES;
-            StringHelper.searchOption = StringSpanish.searchOption_ES;
-            StringHelper.extensionOption = StringSpanish.extensionOption_ES;
-            StringHelper.results = StringSpanish.results_ES;
-            StringHelper.search = StringSpanish.search_ES;
-            StringHelper.reset = StringSpanish.reset_ES;
-            StringHelper.clear = StringSpanish.clear_ES;
-            StringHelper.contains = StringSpanish.contains_ES;
-            StringHelper.endsWith = StringSpanish.endsWith_ES;
-            StringHelper.startsWith = StringSpanish.startsWith_ES;
-            StringHelper.allNonBinary = StringSpanish.allNonBinary_ES;
-            StringHelper.specificExtensions = StringSpanish.specificExtensions_ES;
-            StringHelper.howToUse = StringSpanish.howToUse_ES;
-            StringHelper.language = StringSpanish.language_ES;
-            StringHelper.spanish = StringSpanish.spanish_ES;
-            StringHelper.english = StringSpanish.english_ES;
-            StringHelper.about = StringSpanish.about_ES;
+            StringHelper.errorPath404 = StringSpanish.ERROR_PATH_404_ES;
+            StringHelper.errorFieldEmpty = StringSpanish.ERROR_FIELD_EMTY_ES;
+            StringHelper.status = StringSpanish.STATUS_ES;
+            StringHelper.finished = StringSpanish.FINISHED_ES;
+            StringHelper.searching1 = StringSpanish.SEARCHING1_ES;
+            StringHelper.searching2 = StringSpanish.SEARCHING2_ES;
+            StringHelper.searching3 = StringSpanish.SEARCHING3_ES;
+            StringHelper.waiting = StringSpanish.WAITING_ES;
+            StringHelper.file = StringSpanish.FILE_ES;
+            StringHelper.numOfLine = StringSpanish.NUM_OF_LINE_ES;
+            StringHelper.line = StringSpanish.LINE_ES;
+            StringHelper.numOfResults = StringSpanish.NUM_OF_RESULTS_ES;
+            StringHelper.pathOrFile = StringSpanish.PATH_OR_FILE_ES;
+            StringHelper.pattern = StringSpanish.PATTERN_ES;
+            StringHelper.searchConfiguration = StringSpanish.SEARCH_CONFIG_ES;
+            StringHelper.searchOption = StringSpanish.SEARCH_OPTION_ES;
+            StringHelper.extensionOption = StringSpanish.EXTENSION_OPTION_ES;
+            StringHelper.results = StringSpanish.RESULTS_ES;
+            StringHelper.search = StringSpanish.SEARCH_ES;
+            StringHelper.reset = StringSpanish.RESET_ES;
+            StringHelper.clear = StringSpanish.CLEAR_ES;
+            StringHelper.contains = StringSpanish.CONTAINS_ES;
+            StringHelper.endsWith = StringSpanish.ENDS_WITH_ES;
+            StringHelper.startsWith = StringSpanish.STARTS_WITH_ES;
+            StringHelper.allNonBinary = StringSpanish.ALL_NON_BINARY_FILES_ES;
+            StringHelper.specificExtensions = StringSpanish.SPECIFIC_EXTENSIONS_ES;
+            StringHelper.howToUse = StringSpanish.HOW_TO_USE_ES;
+            StringHelper.language = StringSpanish.LANGUAGE_ES;
+            StringHelper.spanish = StringSpanish.SPANISH_ES;
+            StringHelper.english = StringSpanish.ENGLISH_ES;
+            StringHelper.about = StringSpanish.ABOUT_ES;
+            StringHelper.howToSteps = StringSpanish.HOW_TO_STEPS_ES;
+            StringHelper.titleAbout = StringSpanish.TITLE_ABOUT_ES;
+            StringHelper.titleHowTo = StringSpanish.TITLE_HOW_TO_ES;
         } else {
-            StringHelper.errorPath404 = StringEnglish.errorPath404;
-            StringHelper.errorPathEmpty = StringEnglish.errorPathEmpty;
-            StringHelper.errorPatternEmpty = StringEnglish.errorPatternEmpty;
-            StringHelper.status = StringEnglish.status;
-            StringHelper.finished = StringEnglish.finished;
-            StringHelper.searching1 = StringEnglish.searching1;
-            StringHelper.searching2 = StringEnglish.searching2;
-            StringHelper.searching3 = StringEnglish.searching3;
-            StringHelper.waiting = StringEnglish.about;
-            StringHelper.numOfResults = StringEnglish.numOfResults;
-            StringHelper.file = StringEnglish.file;
-            StringHelper.numOfLine = StringEnglish.numOfLine;
-            StringHelper.line = StringEnglish.line;
-            StringHelper.pathOrFile = StringEnglish.pathOrFile;
-            StringHelper.pattern = StringEnglish.pattern;
-            StringHelper.searchConfiguration = StringEnglish.searchConfiguration;
-            StringHelper.searchOption = StringEnglish.searchOption;
-            StringHelper.extensionOption = StringEnglish.extensionOption;
-            StringHelper.results = StringEnglish.results;
-            StringHelper.search = StringEnglish.search;
-            StringHelper.reset = StringEnglish.reset;
-            StringHelper.clear = StringEnglish.clear;
-            StringHelper.contains = StringEnglish.contains;
-            StringHelper.endsWith = StringEnglish.endsWith;
-            StringHelper.startsWith = StringEnglish.startsWith;
-            StringHelper.allNonBinary = StringEnglish.allNonBinary;
-            StringHelper.specificExtensions = StringEnglish.specificExtensions;
-            StringHelper.howToUse = StringEnglish.howToUse;
-            StringHelper.language = StringEnglish.language;
-            StringHelper.spanish = StringEnglish.spanish;
-            StringHelper.english = StringEnglish.english;
-            StringHelper.about = StringEnglish.about;
+            StringHelper.errorPath404 = StringEnglish.ERROR_PATH_404;
+            StringHelper.errorFieldEmpty = StringEnglish.ERROR_FIELD_EMPTY;
+            StringHelper.status = StringEnglish.STATUS;
+            StringHelper.finished = StringEnglish.FINISHED;
+            StringHelper.searching1 = StringEnglish.SEARCHING1;
+            StringHelper.searching2 = StringEnglish.SEARCHING2;
+            StringHelper.searching3 = StringEnglish.SEARCHING3;
+            StringHelper.waiting = StringEnglish.WAITING;
+            StringHelper.numOfResults = StringEnglish.NUM_OF_RESULTS;
+            StringHelper.file = StringEnglish.FILE;
+            StringHelper.numOfLine = StringEnglish.NUM_OF_LINE;
+            StringHelper.line = StringEnglish.LINE;
+            StringHelper.pathOrFile = StringEnglish.PATH_OR_FILE;
+            StringHelper.pattern = StringEnglish.PATTERN;
+            StringHelper.searchConfiguration = StringEnglish.SEARCH_CONFIG;
+            StringHelper.searchOption = StringEnglish.SEARCH_OPTION;
+            StringHelper.extensionOption = StringEnglish.EXTENSION_OPTION;
+            StringHelper.results = StringEnglish.RESULTS;
+            StringHelper.search = StringEnglish.SEARCH;
+            StringHelper.reset = StringEnglish.RESET;
+            StringHelper.clear = StringEnglish.CLEAR;
+            StringHelper.contains = StringEnglish.CONTAINS;
+            StringHelper.endsWith = StringEnglish.ENDS_WIDTH;
+            StringHelper.startsWith = StringEnglish.START_WITH;
+            StringHelper.allNonBinary = StringEnglish.ALL_BINARY_NON_FILES;
+            StringHelper.specificExtensions = StringEnglish.SPECIFIC_EXTENSIONS;
+            StringHelper.howToUse = StringEnglish.HOW_TO_USE;
+            StringHelper.language = StringEnglish.LANGUAGE;
+            StringHelper.spanish = StringEnglish.SPANISH;
+            StringHelper.english = StringEnglish.ENGLISH;
+            StringHelper.about = StringEnglish.ABOUT;
+            StringHelper.howToSteps = StringEnglish.TITLE_HOW_TO_STEPS;
+            StringHelper.titleAbout = StringEnglish.TITLE_ABOUT;
+            StringHelper.titleHowTo = StringEnglish.TITLE_HOW_TO;
         }
     }
 
     private void setStrings() {
-//        lblErrPattern.setText(StringHelper.errorPatternEmpty);
         lblStatusHeader.setText(StringHelper.status);
         if (lblErrPath.getText().contains("empty") ||
                 lblErrPath.getText().contains("vacío")) {
-            lblErrPath.setText(StringHelper.errorPathEmpty);
+            lblErrPath.setText(StringHelper.errorFieldEmpty);
         } else if (lblErrPath.getText().contains("exists") ||
                 lblErrPath.getText().contains("existe")){
             lblErrPath.setText(StringHelper.errorPath404);
@@ -690,16 +743,16 @@ public class JFrameMain extends javax.swing.JFrame {
         
         if (lblErrPattern.getText().contains("empty") ||
                 lblErrPattern.getText().contains("vacío")) {
-            lblErrPattern.setText(StringHelper.errorPatternEmpty);
+            lblErrPattern.setText(StringHelper.errorFieldEmpty);
         }
         lblStatus.setText(StringHelper.waiting);
         setTable();
         lblPath.setText(StringHelper.pathOrFile);
         lblPattern.setText(StringHelper.pattern);
-        panelSearchConfig.setBorder(javax.swing.BorderFactory.createTitledBorder(StringHelper.searchConfiguration));
-        panelSearchOption.setBorder(javax.swing.BorderFactory.createTitledBorder(StringHelper.searchOption));
-        panelExtensionOption.setBorder(javax.swing.BorderFactory.createTitledBorder(StringHelper.extensionOption));
-        panelResults.setBorder(javax.swing.BorderFactory.createTitledBorder(StringHelper.results));
+        panelSearchConfig.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)), StringHelper.searchConfiguration, javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Arial", 1, 12))); // NOI18N
+        panelResults.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)), StringHelper.results, javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Arial", 1, 12)));
+        panelSearchOption.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), StringHelper.searchOption, javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Arial", 0, 12))); // NOI18N
+        panelExtensionOption.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), StringHelper.extensionOption, javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.TOP, new java.awt.Font("Arial", 0, 12))); // NOI18N
         btnSearch.setText(StringHelper.search);
         btnReset.setText(StringHelper.reset);
         btnClear.setText(StringHelper.clear);
@@ -714,5 +767,22 @@ public class JFrameMain extends javax.swing.JFrame {
         menuAbout.setText(StringHelper.about);
         rbmEs.setText(StringHelper.spanish);
         rbmEn.setText(StringHelper.english);
+        lblHowTo.setText(StringHelper.howToSteps);
+        dialogAbout.setTitle(StringHelper.titleAbout);
+        dialogHowTo.setTitle(StringHelper.titleHowTo);
+    }
+
+    private void enablePanelResults() {
+        panelResults.setEnabled(true);
+        tableResults.setEnabled(true);
+        btnClear.setEnabled(true);
+        lblNumResultsHeader.setEnabled(true);
+        lblNumResults.setVisible(true);
+        lblNumResults.setText("0");
+    }
+
+    private void configFileChooser() {
+        openFileChooser = new JFileChooser();
+        openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     }
 }

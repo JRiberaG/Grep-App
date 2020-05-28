@@ -1,6 +1,5 @@
 package main;
 
-import com.sun.istack.internal.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,12 +34,15 @@ public class Seeker extends Thread implements Runnable {
     private ArrayList<String> listExtensions;
 
     // Constructor made to seek
-    public Seeker(File file, String pattern, int selection, @Nullable ArrayList<String> listExtensions) {
+    public Seeker(File file, String pattern, int selection, boolean getListExtensions){//@Nullable ArrayList<String> listExtensions) {
         this.file = file;
         this.pattern = pattern;
         this.patternSelection = selection;
         this.model = JFrameMain.model;
         this.listExtensions = listExtensions;
+        if (getListExtensions) {
+            listExtensions = JFrameMain.listExtensions;
+        }
     }    
     
     // Constructor made to return results
@@ -60,7 +62,7 @@ public class Seeker extends Thread implements Runnable {
                 
                 files = new ArrayList<>(Arrays.asList(file.listFiles()));
                 for(File f : files) {
-                    Seeker seeker = new Seeker(f, pattern, patternSelection, null);
+                    Seeker seeker = new Seeker(f, pattern, patternSelection, false);
                     
 //                    numThreads++;
                     
@@ -86,7 +88,7 @@ public class Seeker extends Thread implements Runnable {
 //                numDirs++;
                 files = new ArrayList<>(Arrays.asList(file.listFiles()));
                 for(File f : files) {
-                    Seeker seeker = new Seeker(f, pattern, patternSelection, listExtensions);
+                    Seeker seeker = new Seeker(f, pattern, patternSelection, true);
 //                    numThreads++;
                     seeker.start();
                 }

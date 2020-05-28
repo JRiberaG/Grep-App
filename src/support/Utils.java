@@ -5,6 +5,13 @@ import java.util.Arrays;
 
 public class Utils {
     
+    public static ArrayList<String> getExtensions(String str) {
+        str = str.replace(" ", "");
+        String arrExtensions[] = str.split(",");
+        
+         return new ArrayList<>(Arrays.asList(arrExtensions));
+    }
+    
     public static boolean hasSameExtension(String fileName, String extToCheck) {
         boolean areTheSame = false;
         
