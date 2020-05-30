@@ -13,11 +13,10 @@ import javax.swing.table.DefaultTableModel;
 import static main.JFrameMain.CONTAINS;
 import static main.JFrameMain.ENDS_WITH;
 import static main.JFrameMain.STARTS_WITH;
+import static main.JFrameMain.rootPath;
 import support.StatManager;
-import static support.StatManager.numDirs;
 import static support.StatManager.numFiles;
 import static support.StatManager.numResults;
-import static support.StatManager.numThreads;
 import static support.Utils.hasSameExtension;
 
 public class Seeker extends Thread implements Runnable {
@@ -37,10 +36,10 @@ public class Seeker extends Thread implements Runnable {
     public Seeker(File file, String pattern, int selection, boolean getListExtensions){//@Nullable ArrayList<String> listExtensions) {
         this.file = file;
         this.pattern = pattern;
-        this.patternSelection = selection;
-        this.model = JFrameMain.model;
-        this.listExtensions = listExtensions;
+        patternSelection = selection;
+        model = JFrameMain.model;
         if (getListExtensions) {
+            listExtensions = new ArrayList<>();
             listExtensions = JFrameMain.listExtensions;
         }
     }    
@@ -57,15 +56,9 @@ public class Seeker extends Thread implements Runnable {
         // Searches in all non binary files
         if (listExtensions == null) {
             if (file.isDirectory()) {
-                
-//                numDirs++;
-                
                 files = new ArrayList<>(Arrays.asList(file.listFiles()));
                 for(File f : files) {
                     Seeker seeker = new Seeker(f, pattern, patternSelection, false);
-                    
-//                    numThreads++;
-                    
                     seeker.start();
                 }
             } else {
@@ -74,9 +67,6 @@ public class Seeker extends Thread implements Runnable {
                         numFiles++;
                     }       
                     readFile(file, pattern, patternSelection);
-//                    for (Seeker s : results) {
-//                        System.out.println(s.toString());
-//                    }
                 } catch (IOException ex) {
                     Logger.getLogger(Seeker.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -85,11 +75,9 @@ public class Seeker extends Thread implements Runnable {
         // Searches in determinate extensions
         else {
             if (file.isDirectory()) {
-//                numDirs++;
                 files = new ArrayList<>(Arrays.asList(file.listFiles()));
                 for(File f : files) {
                     Seeker seeker = new Seeker(f, pattern, patternSelection, true);
-//                    numThreads++;
                     seeker.start();
                 }
             } else {
@@ -161,7 +149,7 @@ public class Seeker extends Thread implements Runnable {
         line = line.trim();
         numResults++;
 
-        String resultPrinted[] = {file.getAbsolutePath(), String.valueOf(numLine), line};
+        String resultPrinted[] = {file.getAbsolutePath().substring(rootPath.length()), String.valueOf(numLine), line};
         synchronized(model){
             model.addRow(resultPrinted);
         }

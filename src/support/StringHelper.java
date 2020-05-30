@@ -32,7 +32,7 @@ public class StringHelper {
     public static String contains = "Contains ...";
     public static String endsWith = "Ends with...";
     public static String startsWith = "Starts with...";
-    public static String allNonBinary = "All non binary files";
+    public static String allNonBinary = "All files";
     public static String specificExtensions = "Specific extensions";
     
     public static String howToUse = "How to use";

@@ -44,6 +44,7 @@ public class JFrameMain extends javax.swing.JFrame {
     private static JFileChooser openFileChooser;
     
     static ArrayList<String> listExtensions;
+    static String rootPath;
 
     public JFrameMain() {
         initComponents();
@@ -94,6 +95,7 @@ public class JFrameMain extends javax.swing.JFrame {
         lblPattern = new javax.swing.JLabel();
         lblPath = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        lblWarning = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         menuHowTo = new javax.swing.JMenu();
         menuLang = new javax.swing.JMenu();
@@ -105,7 +107,6 @@ public class JFrameMain extends javax.swing.JFrame {
         dialogAbout.setLocationByPlatform(true);
         dialogAbout.setMinimumSize(new java.awt.Dimension(225, 190));
         dialogAbout.setModal(true);
-        dialogAbout.setPreferredSize(new java.awt.Dimension(225, 190));
         dialogAbout.setResizable(false);
         dialogAbout.getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -124,11 +125,10 @@ public class JFrameMain extends javax.swing.JFrame {
 
         dialogHowTo.setTitle("How to use the app - GrepApp");
         dialogHowTo.setMinimumSize(new java.awt.Dimension(700, 400));
-        dialogHowTo.setPreferredSize(new java.awt.Dimension(700, 400));
         dialogHowTo.setResizable(false);
         dialogHowTo.getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        lblHowTo.setText("<html>\n<h3>How to use the app</h3>\n<p> The objective of this app is to locate within the path or the file the pattern given by the user, quite useful when you know you wrote something like <code>Hello World!</code> but you can't remember where...<br/>\n<h4>Steps to follow:</h4>\n1) Type (copy/paste if you like) the path or the file in the corresponding field.<br/>\n2) Type the pattern to search, for example, <code>Hello World!</code><br/>\n3) Select where do you want or do you except to find the pattern, either within the whole file, just at the beginning or at the very end. <br/>\n4) Select the kind of files you want to search on, either all the binary files or just those who have a concrete extension, for example: <code>.json, .cpp, .java, .html,</code> ... <br/>\n5) Press <b>Search</b> and wait until the status stays as <i>Finished</i>. <br/><br/>\nIn case you want to reset the fields to their default value, press <b>Reset</b>.<br/>\nIn case you want to clear the data from the results, press <b>Clear</b>.<br/><br/>\nAny suggestion, doubt  or constructive criticism is very welcomed!<br/>\n(Link to my GitHub in the <b>About</b> menu)<br/>\n</html>\n");
+        lblHowTo.setText("<html>\n<h3>How to use the app</h3>\n<p> The objective of this app is to locate within the path or the file the pattern given by the user, quite useful when you know you wrote something like <code>Hello World!</code> but you can't remember where...<br/>\n<h4>Steps to follow:</h4>\n1) Type (copy/paste if you like) the path or the file in the corresponding field.<br/>\n2) Type the pattern to search, for example, <code>Hello World!</code><br/>\n3) Select where do you want or do you except to find the pattern, either within the whole file, just at the beginning or at the very end. <br/>\n4) Select the kind of files you want to search on, either all the binary files or just those who have a concrete extension, for example: <code>.json, .cpp, .java, .html,</code> ... <br/>\n5) Press <b>Search</b> and wait until the status stays as <i>Finished</i>. <br/><br/>\nIn case you want to reset the fields to their default value, press <b>Reset</b>.<br/>\nIn case you want to clear the data from the results, press <b>Clear</b>.<br/><br/>\n\n<p style=\"color:orange\">Warning! If your search is large your computer probably will crash. Try to <b>narrow it down</b> as much as possible.</p><br/>\nAny suggestion, doubt  or constructive criticism is very welcomed!<br/>\n(Link to my GitHub in the <b>About</b> menu)<br/>\n</html>\n");
         lblHowTo.setMinimumSize(new java.awt.Dimension(300, 300));
         lblHowTo.setPreferredSize(new java.awt.Dimension(300, 300));
         dialogHowTo.getContentPane().add(lblHowTo, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 0, 670, 370));
@@ -137,7 +137,6 @@ public class JFrameMain extends javax.swing.JFrame {
         setTitle("Grep App");
         setLocationByPlatform(true);
         setMinimumSize(new java.awt.Dimension(1100, 600));
-        setPreferredSize(new java.awt.Dimension(600, 600));
         setResizable(false);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -222,7 +221,7 @@ public class JFrameMain extends javax.swing.JFrame {
 
         btnGroupExtensions.add(rbAllExtensions);
         rbAllExtensions.setSelected(true);
-        rbAllExtensions.setText("All non binare files");
+        rbAllExtensions.setText("All files");
         rbAllExtensions.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbAllExtensionsActionPerformed(evt);
@@ -286,6 +285,12 @@ public class JFrameMain extends javax.swing.JFrame {
 
         getContentPane().add(panelSearchConfig, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 30, 400, 510));
 
+        lblWarning.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        lblWarning.setForeground(new java.awt.Color(255, 153, 51));
+        lblWarning.setText("<html>\n\t<head>\n\t\t<style>\n\t\t</style>\n\t</head>\n\t<body>\n\t\t<p>Warning !</p>\n\t</body>\n</html>");
+        lblWarning.setToolTipText("<html>Be careful! If your search is large your computer probably will crash. Try to <b>narrow it down</b> as much as possible.</html>");
+        getContentPane().add(lblWarning, new org.netbeans.lib.awtextra.AbsoluteConstraints(980, 10, -1, 20));
+
         menuHowTo.setText("How to use");
         menuHowTo.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -340,7 +345,7 @@ public class JFrameMain extends javax.swing.JFrame {
         // Both Path and Pattern and Ok
         if (!strPath.isEmpty() && !strPattern.isEmpty()) {
             // <editor-fold>
-            
+            rootPath = "";
             // Hide the label errors
             lblErrPath.setText("");
             lblErrPattern.setText("");
@@ -353,11 +358,15 @@ public class JFrameMain extends javax.swing.JFrame {
             if (!file.exists()) {
                 lblErrPath.setText(StringHelper.errorPath404);
             } else {
+                rootPath = etPath.getText();
+                if (!rootPath.endsWith(File.separator)){
+                    rootPath += File.separator;
+                }
                 enablePanelResults();
                 checkForSupportThreads();
                 // Search within all non binary files
                 if (rbAllExtensions.isSelected()) {
-
+                    listExtensions.clear();
                     // Check whether is directory or not
                     if (file.isDirectory()) {
                         numDirs++;
@@ -384,7 +393,8 @@ public class JFrameMain extends javax.swing.JFrame {
                     if (!strExtensions.isEmpty()) {
                         if (strExtensions.contains(".")) {
                             
-                            ArrayList<String> listExtensions = getExtensions(strExtensions);
+                            listExtensions = getExtensions(strExtensions);
+                            
 
                             // Check whether is directory or not
                             if (file.isDirectory()) {
@@ -457,6 +467,7 @@ public class JFrameMain extends javax.swing.JFrame {
     private void rbAllExtensionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbAllExtensionsActionPerformed
         if (rbAllExtensions.isSelected()) {
             etExtensions.setEnabled(false);
+            etExtensions.setText("");
         }
     }//GEN-LAST:event_rbAllExtensionsActionPerformed
 
@@ -551,6 +562,7 @@ public class JFrameMain extends javax.swing.JFrame {
     private javax.swing.JLabel lblStatus;
     private javax.swing.JLabel lblStatusHeader;
     private javax.swing.JLabel lblVersion;
+    private javax.swing.JLabel lblWarning;
     private javax.swing.JMenu menuAbout;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenu menuHowTo;
@@ -589,8 +601,11 @@ public class JFrameMain extends javax.swing.JFrame {
         
         rbContains.setSelected(true);
         rbAllExtensions.setSelected(true);
+        etExtensions.setEnabled(false);
+        etExtensions.setText("");
         
         listExtensions = new ArrayList<>();
+        rootPath = "";
     }
     
     private void setTable() {

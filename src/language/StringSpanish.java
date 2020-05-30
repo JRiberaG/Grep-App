@@ -32,7 +32,7 @@ public class StringSpanish {
     public static final String CONTAINS_ES          = "Contiene ...";
     public static final String ENDS_WITH_ES         = "Acaba en ...";
     public static final String STARTS_WITH_ES       = "Empieza con ...";
-    public static final String ALL_NON_BINARY_FILES_ES= "Cualquier fichero no binario";
+    public static final String ALL_NON_BINARY_FILES_ES= "Cualquier fichero";
     public static final String SPECIFIC_EXTENSIONS_ES= "Ext. específicas:";
     
     public static final String HOW_TO_USE_ES        = "Cómo se usa";

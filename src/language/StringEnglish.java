@@ -32,7 +32,7 @@ public class StringEnglish {
     public static final String CONTAINS             = "Contains ...";
     public static final String ENDS_WIDTH           = "Ends with...";
     public static final String START_WITH           = "Starts with...";
-    public static final String ALL_BINARY_NON_FILES = "All non binary files";
+    public static final String ALL_BINARY_NON_FILES = "All files";
     public static final String SPECIFIC_EXTENSIONS  = "Specific extensions";
     
     public static final String HOW_TO_USE           = "How to use";
